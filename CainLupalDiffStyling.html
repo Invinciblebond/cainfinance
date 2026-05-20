@@ -3,20 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
-<title>aCain | Cain by Cain.Finance</title>
+<title>aCain | Cain.Finance</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body { font-family:'Inter',sans-serif; background:#060606; color:#fff; }
 
-<style data-purpose="custom-fonts">
-  body {
-    font-family: 'Inter', sans-serif;
-    background-color: #060606;
-    color: #ffffff;
-  }
-</style>
-
-<style data-purpose="background-texture">
   .bg-dot-grid {
     background-image: radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px);
     background-size: 24px 24px;
@@ -26,865 +18,669 @@
     backdrop-filter: blur(12px);
     border: 1px solid rgba(255,255,255,0.08);
   }
-  .sidebar-active {
-    background: rgba(255,255,255,0.05);
-    border-radius: 8px;
-  }
-  .mint-button-gradient {
-    background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+  .mint-btn-bg {
+    background: linear-gradient(180deg,rgba(255,255,255,0.1) 0%,rgba(255,255,255,0.05) 100%);
     border: 1px solid rgba(255,255,255,0.15);
-    transition: all 0.2s;
   }
-  .mint-button-gradient:hover { background: rgba(255,255,255,0.12); }
+  .mint-btn-bg:hover { background: rgba(255,255,255,0.12); }
+  .sidebar-active { background:rgba(255,255,255,0.05); border-radius:8px; }
 
-  /* ── SIDEBAR COLLAPSE ── */
-  #sidebar {
-    width: 256px;
-    transition: width 0.3s cubic-bezier(0.4,0,0.2,1);
-    overflow: hidden;
-    flex-shrink: 0;
+  /* sidebar collapse */
+  #sidebar { width:256px; transition:width .3s cubic-bezier(.4,0,.2,1); overflow:hidden; flex-shrink:0; }
+  #sidebar.collapsed { width:64px; }
+  #sidebar .hide-collapsed { transition:opacity .2s; white-space:nowrap; }
+  #sidebar.collapsed .hide-collapsed { opacity:0; pointer-events:none; }
+
+  /* toggle chevron */
+  #sb-toggle { transition:background .2s; }
+  #sb-toggle svg { transition:transform .3s; }
+  #sidebar.collapsed #sb-toggle svg { transform:rotate(180deg); }
+
+  /* wallet pill */
+  #wallet-pill {
+    display:none; align-items:center; gap:6px;
+    background:rgba(34,197,94,0.08);
+    border:1px solid rgba(34,197,94,0.25);
+    border-radius:9999px; padding:5px 12px 5px 8px;
+    animation: pillIn .3s cubic-bezier(.34,1.56,.64,1) both;
   }
-  #sidebar.collapsed { width: 64px; }
+  #wallet-pill.show { display:flex; }
+  @keyframes pillIn { from{opacity:0;transform:translateX(8px)} to{opacity:1;transform:translateX(0)} }
 
-  #sidebar .sidebar-label,
-  #sidebar .brand-text,
-  #sidebar .nav-text,
-  #sidebar .recents-section {
-    transition: opacity 0.2s, transform 0.2s;
+  .live-dot {
+    width:7px;height:7px;background:#22c55e;border-radius:50%;
+    box-shadow:0 0 6px #22c55e;
+    animation:livePulse 2s ease-in-out infinite;
   }
-  #sidebar.collapsed .sidebar-label,
-  #sidebar.collapsed .brand-text,
-  #sidebar.collapsed .nav-text,
-  #sidebar.collapsed .recents-section {
-    opacity: 0;
-    pointer-events: none;
-    transform: translateX(-6px);
-  }
+  @keyframes livePulse { 0%,100%{opacity:1} 50%{opacity:.3} }
 
-  /* ── WALLET CONNECTED PILL ── */
-  #wallet-connected-pill {
-    display: none;
-    align-items: center;
-    gap: 6px;
-    background: rgba(34,197,94,0.08);
-    border: 1px solid rgba(34,197,94,0.25);
-    border-radius: 9999px;
-    padding: 5px 12px 5px 8px;
-    animation: pillIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
-  }
-  #wallet-connected-pill.visible { display: flex; }
+  /* tabs */
+  .ptab { color:#71717a; border-bottom:2px solid transparent; transition:color .15s,border-color .15s; }
+  .ptab:hover { color:#fff; }
+  .ptab.on { color:#fff; border-bottom-color:#fff; }
+  .mtab { color:#71717a; border-bottom:1px solid transparent; transition:color .15s,border-color .15s; }
+  .mtab:hover { color:#fff; }
+  .mtab.on { color:#fff; border-bottom-color:#fff; }
 
-  @keyframes pillIn {
-    from { opacity:0; transform: translateX(10px) scale(0.94); }
-    to   { opacity:1; transform: translateX(0) scale(1); }
-  }
-
-  .green-pulse {
-    width: 7px; height: 7px;
-    background: #22c55e;
-    border-radius: 50%;
-    box-shadow: 0 0 6px #22c55e;
-    animation: gPulse 2s ease-in-out infinite;
-  }
-  @keyframes gPulse {
-    0%,100% { opacity:1; }
-    50%      { opacity:0.35; }
-  }
-
-  /* ── TOGGLE BUTTON ── */
-  #sidebar-toggle {
-    position: absolute;
-    top: 22px;
-    right: -12px;
-    width: 24px; height: 24px;
-    background: #121212;
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    z-index: 30;
-    transition: border-color 0.2s, background 0.2s;
-  }
-  #sidebar-toggle:hover { border-color: rgba(255,255,255,0.3); background: #1a1a1a; }
-  #sidebar-toggle svg { transition: transform 0.3s; }
-  #sidebar.collapsed #sidebar-toggle svg { transform: rotate(180deg); }
-
-  /* ── TABS ── */
-  .tab-active   { color:#fff; border-bottom: 2px solid #fff; }
-  .tab-inactive { color:#71717a; border-bottom: 2px solid transparent; }
-  .tab-inactive:hover { color:#fff; }
-
-  /* ── MINT TABS ── */
-  .mtab-active   { color:#fff; border-bottom: 1px solid #fff; }
-  .mtab-inactive { color:#71717a; }
-  .mtab-inactive:hover { color:#fff; }
-
-  /* ── ACCORDION ── */
+  /* accordion arrow */
+  details summary svg { transition:transform .2s; }
+  details[open] summary svg { transform:rotate(180deg); }
   details summary::-webkit-details-marker { display:none; }
-  details[open] summary svg { transform: rotate(180deg); }
-  details summary svg { transition: transform 0.2s; }
 
-  /* ── CHART ── */
-  #perf-canvas { display:block; }
-
-  /* ── TOAST ── */
+  /* toast */
   #toast {
-    position: fixed; bottom:24px; right:24px;
-    background: #121212;
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 12px;
-    padding: 11px 18px;
-    font-size: 13px;
-    color: #e5e5e5;
-    z-index: 9999;
-    opacity: 0;
-    transform: translateY(16px);
-    transition: opacity 0.25s, transform 0.25s;
-    pointer-events: none;
+    position:fixed;bottom:24px;right:24px;z-index:9999;
+    background:#121212;border:1px solid rgba(255,255,255,.1);
+    border-radius:12px;padding:10px 16px;font-size:13px;color:#e5e5e5;
+    opacity:0;transform:translateY(12px);transition:opacity .25s,transform .25s;
+    pointer-events:none;
   }
-  #toast.show { opacity:1; transform:translateY(0); }
-  #toast.green { border-color: rgba(34,197,94,0.35); color:#4ade80; }
-  #toast.red   { border-color: rgba(239,68,68,0.35);  color:#f87171; }
-
-  /* ── PAGE FADE ── */
-  @keyframes fadeUp {
-    from { opacity:0; transform:translateY(14px); }
-    to   { opacity:1; transform:translateY(0); }
-  }
-  .fade-up { animation: fadeUp 0.45s ease both; }
-  .delay-1 { animation-delay: 0.05s; }
-  .delay-2 { animation-delay: 0.12s; }
-  .delay-3 { animation-delay: 0.20s; }
+  #toast.show { opacity:1;transform:translateY(0); }
+  #toast.ok  { border-color:rgba(34,197,94,.4);color:#4ade80; }
+  #toast.err { border-color:rgba(239,68,68,.4);color:#f87171; }
 </style>
 </head>
+<body class="selection:bg-blue-500/30">
+<div class="flex min-h-screen">
 
-<body class="bg-[#060606] text-[#e5e5e5] selection:bg-blue-500/30">
-<div class="flex min-h-screen relative">
+<!-- ═══ SIDEBAR ═══ -->
+<aside id="sidebar" class="border-r border-white/5 flex flex-col p-5 sticky top-0 h-screen relative">
 
-  <!-- ══════════════ SIDEBAR ══════════════ -->
-  <aside id="sidebar" class="border-r border-white/5 flex flex-col p-5 sticky top-0 h-screen relative">
+  <!-- toggle button -->
+  <button id="sb-toggle"
+    class="absolute top-5 -right-3 w-6 h-6 bg-[#121212] border border-white/10 rounded-full flex items-center justify-center z-20 hover:border-white/30">
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+      <path d="M6.5 2L3.5 5l3 3" stroke="rgba(255,255,255,.45)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
 
-    <!-- Toggle button -->
-    <button id="sidebar-toggle" title="Toggle sidebar">
-      <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-        <path d="M6.5 2L3.5 5l3 3" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </button>
+  <!-- brand -->
+  <div class="flex items-center gap-2.5 mb-10 overflow-hidden">
+    <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
+      <div class="w-4 h-4 bg-black rounded-sm"></div>
+    </div>
+    <div class="hide-collapsed">
+      <p class="text-sm font-bold tracking-tight text-white leading-none">Nest</p>
+      <p class="text-[10px] uppercase tracking-widest text-zinc-500">by Cain.Finance</p>
+    </div>
+  </div>
 
-    <!-- Brand -->
-    <div class="flex items-center gap-2.5 mb-10 overflow-hidden whitespace-nowrap">
-      <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
-        <div class="w-4 h-4 bg-black rounded-sm"></div>
+  <!-- nav -->
+  <nav class="space-y-1 flex-1">
+    <a href="#" class="flex items-center gap-3 px-3 py-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+      <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+      <span class="hide-collapsed text-sm font-medium">Earn</span>
+    </a>
+    <a href="#" class="flex items-center gap-3 px-3 py-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+      <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+      <span class="hide-collapsed text-sm font-medium">Borrow</span>
+    </a>
+    <a href="#" class="flex items-center gap-3 px-3 py-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+      <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+      <span class="hide-collapsed text-sm font-medium">Portfolio</span>
+    </a>
+    <a href="#" class="flex items-center gap-3 px-3 py-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+      <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+      <span class="hide-collapsed text-sm font-medium">More</span>
+    </a>
+
+    <!-- recents -->
+    <div class="hide-collapsed pt-5 border-t border-white/5 mt-4">
+      <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-3 mb-3">Recents</p>
+      <div class="flex items-center gap-3 px-3 py-2 sidebar-active text-white">
+        <div class="w-6 h-6 rounded-full bg-zinc-700 border border-white/10 flex items-center justify-center text-[10px] font-bold flex-shrink-0">aC</div>
+        <span class="text-sm font-medium">aCain</span>
       </div>
-      <div class="brand-text">
-        <h1 class="text-xl font-bold tracking-tight text-white leading-none">Nest</h1>
-        <span class="text-[10px] uppercase tracking-widest text-zinc-500">by Cain.Finance</span>
+      <div class="flex items-center gap-3 px-3 py-2 text-zinc-400 hover:bg-white/5 rounded-lg cursor-pointer mt-1">
+        <div class="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-[10px] flex-shrink-0">P</div>
+        <span class="text-sm font-medium">aCain · pUSD</span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="mt-auto pt-4 border-t border-white/5">
+    <button onclick="document.getElementById('sidebar').classList.toggle('collapsed')"
+      class="p-2 text-zinc-500 hover:text-white transition-colors">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16m-7 6h7" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/></svg>
+    </button>
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<main class="flex-1 bg-dot-grid overflow-y-auto">
+
+  <!-- HEADER -->
+  <header class="flex items-center justify-between px-10 py-4 sticky top-0 z-20 bg-[#060606]/80 backdrop-blur-md border-b border-white/5">
+    <div class="relative w-80">
+      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+        <svg class="h-4 w-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+      </div>
+      <input class="block w-full bg-[#121212] border border-white/10 rounded-lg py-2 pl-10 pr-3 text-sm placeholder-zinc-500 focus:ring-1 focus:ring-white/20 focus:border-white/20 transition-all" placeholder="Search vaults…" type="text">
+      <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+        <span class="text-[10px] text-zinc-500 bg-white/5 px-1.5 py-0.5 rounded border border-white/10">⌘K</span>
       </div>
     </div>
 
-    <!-- Nav -->
-    <nav class="space-y-6 flex-1 overflow-hidden">
-      <div class="space-y-1">
-        <a class="flex items-center gap-3 px-3 py-2 text-zinc-400 hover:text-white transition-colors rounded-lg hover:bg-white/5 whitespace-nowrap" href="#">
-          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
-          <span class="nav-text text-sm font-medium">Earn</span>
-        </a>
-        <a class="flex items-center gap-3 px-3 py-2 text-zinc-400 hover:text-white transition-colors rounded-lg hover:bg-white/5 whitespace-nowrap" href="#">
-          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
-          <span class="nav-text text-sm font-medium">Borrow</span>
-        </a>
-        <a class="flex items-center gap-3 px-3 py-2 text-zinc-400 hover:text-white transition-colors rounded-lg hover:bg-white/5 whitespace-nowrap" href="#">
-          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
-          <span class="nav-text text-sm font-medium">Portfolio</span>
-        </a>
-        <a class="flex items-center gap-3 px-3 py-2 text-zinc-400 hover:text-white transition-colors rounded-lg hover:bg-white/5 whitespace-nowrap" href="#">
-          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
-          <span class="nav-text text-sm font-medium">More</span>
-        </a>
+    <!-- RIGHT SIDE: pill + button, clean and simple -->
+    <div class="flex items-center gap-3">
+
+      <!-- green connected pill — hidden until wallet connects -->
+      <div id="wallet-pill">
+        <div class="live-dot"></div>
+        <span class="text-xs font-medium text-green-400">MetaMask connected</span>
+        <span id="pill-addr" class="text-xs text-green-600 font-mono"></span>
       </div>
 
-      <!-- Recents -->
-      <div class="recents-section pt-4 border-t border-white/5 overflow-hidden whitespace-nowrap">
-        <p class="sidebar-label text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-3 mb-4">Recents</p>
-        <div class="space-y-1">
-          <div class="flex items-center gap-3 px-3 py-2 sidebar-active text-white">
-            <div class="w-6 h-6 rounded-full bg-gradient-to-br from-zinc-600 to-zinc-800 border border-white/10 flex items-center justify-center text-[10px] font-bold flex-shrink-0">aC</div>
-            <span class="nav-text text-sm font-medium">aCain</span>
-          </div>
-          <div class="flex items-center gap-3 px-3 py-2 text-zinc-400 rounded-lg hover:bg-white/5 cursor-pointer whitespace-nowrap">
-            <div class="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-[10px] flex-shrink-0">P</div>
-            <span class="nav-text text-sm font-medium">aCain · pUSD</span>
-          </div>
-          <div class="flex items-center gap-3 px-3 py-2 text-zinc-400 rounded-lg hover:bg-white/5 cursor-pointer whitespace-nowrap">
-            <div class="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-[10px] flex-shrink-0">A</div>
-            <span class="nav-text text-sm font-medium">aAlpha · pUSD</span>
-          </div>
-        </div>
-      </div>
-    </nav>
+      <!-- disconnect — hidden until connected -->
+      <button id="btn-disconnect"
+        class="hidden text-xs text-zinc-400 border border-white/10 rounded-lg px-3 py-1.5 hover:border-red-500/40 hover:text-red-400 transition-colors">
+        Disconnect
+      </button>
 
-    <!-- Bottom toggle icon -->
-    <div class="mt-auto pt-6 border-t border-white/5">
-      <button id="sidebar-toggle-bottom" class="p-2 text-zinc-500 hover:text-white transition-colors">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16m-7 6h7" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/></svg>
+      <!-- CONNECT WALLET — visible by default -->
+      <button id="btn-connect"
+        class="flex items-center gap-2 bg-white text-black text-sm font-bold px-4 py-1.5 rounded-lg hover:bg-zinc-200 transition-colors">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="3" stroke-width="2"/></svg>
+        Connect Wallet
       </button>
     </div>
-  </aside>
-  <!-- ══ END SIDEBAR ══ -->
+  </header>
 
-  <!-- ══════════════ MAIN ══════════════ -->
-  <main class="flex-1 bg-dot-grid overflow-y-auto">
+  <div class="max-w-[1400px] mx-auto px-10 pt-12 pb-24">
 
-    <!-- TOP NAV -->
-    <header class="flex items-center justify-between px-10 py-4 sticky top-0 z-20 bg-[#060606]/80 backdrop-blur-md border-b border-white/5">
-      <div class="relative w-80">
-        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <svg class="h-4 w-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
-        </div>
-        <input class="block w-full bg-[#121212] border border-white/10 rounded-lg py-2 pl-10 pr-3 text-sm placeholder-zinc-500 focus:ring-1 focus:ring-white/20 focus:border-white/20 transition-all" placeholder="Search vaults…" type="text">
-        <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
-          <span class="text-[10px] text-zinc-500 bg-white/5 px-1.5 py-0.5 rounded border border-white/10">⌘K</span>
+    <!-- HERO -->
+    <div class="mb-12">
+      <div class="w-20 h-20 bg-zinc-900 rounded-2xl mb-6 flex items-center justify-center border border-white/10 shadow-2xl">
+        <span class="text-3xl font-bold text-white">aC</span>
+      </div>
+      <div class="flex items-center gap-4 mb-4">
+        <h2 class="text-6xl font-semibold text-white tracking-tight">aCain</h2>
+        <div class="flex gap-2">
+          <button class="p-2 hover:bg-white/5 rounded-lg border border-white/5 transition-colors">
+            <svg class="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+          </button>
+          <button class="p-2 hover:bg-white/5 rounded-lg border border-white/5 transition-colors">
+            <svg class="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+          </button>
         </div>
       </div>
-
-      <div class="flex items-center gap-3">
-
-        <!-- ── METAMASK CONNECTED PILL ── -->
-        <div id="wallet-connected-pill">
-          <div class="green-pulse"></div>
-          <span class="text-xs font-medium text-green-400">MetaMask connected</span>
-          <span id="wallet-address-short" class="text-xs text-green-600 font-mono"></span>
-        </div>
-
-        <!-- Disconnect button -->
-        <button id="disconnect-btn" class="hidden items-center gap-1.5 px-3 py-1.5 text-xs text-zinc-400 border border-white/10 rounded-lg hover:border-red-500/40 hover:text-red-400 transition-colors">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
-          Disconnect
-        </button>
-
-        <!-- Utility icons -->
-        <button class="p-2 text-zinc-400 hover:bg-white/5 rounded-lg transition-colors">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
-        </button>
-        <button class="p-2 text-zinc-400 hover:bg-white/5 rounded-lg transition-colors">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
-        </button>
-
-        <!-- Connect wallet button (hidden when connected) -->
-        <button id="connect-btn" class="flex items-center gap-2 bg-white text-black px-4 py-1.5 rounded-lg text-sm font-bold hover:bg-zinc-200 transition-colors">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9 10h.01M15 10h.01M12 14s1.5 1 3 0" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
-          Connect Wallet
-        </button>
-
-        <!-- Wallet address chip (shown when connected) -->
-        <div id="wallet-chip" class="hidden items-center gap-2 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
-          <div class="w-5 h-5 bg-green-500/20 rounded-full flex items-center justify-center">
-            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-          </div>
-          <span id="wallet-chip-address" class="text-sm font-medium font-mono"></span>
-        </div>
-      </div>
-    </header>
-    <!-- END TOP NAV -->
-
-    <div class="max-w-[1400px] mx-auto px-10 pt-12 pb-24">
-
-      <!-- VAULT HERO -->
-      <div class="mb-12 fade-up delay-1">
-        <div class="w-20 h-20 bg-zinc-900 rounded-2xl mb-6 flex items-center justify-center border border-white/10 shadow-2xl">
-          <span class="text-3xl font-bold text-white tracking-tight">aC</span>
-        </div>
-        <div class="flex items-center gap-4 mb-4">
-          <h2 class="text-6xl font-semibold text-white tracking-tight">aCain</h2>
-          <div class="flex gap-2">
-            <button class="p-2 hover:bg-white/5 rounded-lg border border-white/5 transition-colors">
-              <svg class="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
-            </button>
-            <button class="p-2 hover:bg-white/5 rounded-lg border border-white/5 transition-colors">
-              <svg class="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
-            </button>
-          </div>
-        </div>
-        <div class="flex gap-2 flex-wrap">
-          <span class="bg-white/5 border border-white/10 px-3 py-1 rounded-full text-xs font-medium text-zinc-400 uppercase tracking-wider">Diversified Asset Pool</span>
-          <span class="bg-white/5 border border-white/10 px-3 py-1 rounded-full text-xs font-medium text-zinc-400 uppercase tracking-wider">xSTOCK SPY · Solana</span>
-          <span class="bg-white/5 border border-white/10 px-3 py-1 rounded-full text-xs font-medium text-zinc-400 uppercase tracking-wider">Audited</span>
-        </div>
-      </div>
-
-      <!-- NAV TABS -->
-      <div class="flex gap-8 mb-12 border-b border-white/5 fade-up delay-2" id="page-tabs">
-        <button class="pb-4 text-sm font-medium transition-colors tab-inactive" data-tab="overview">Overview</button>
-        <button class="pb-4 text-sm font-medium transition-colors tab-inactive" data-tab="transparency">Transparency</button>
-        <button class="pb-4 text-sm font-medium transition-colors tab-active" data-tab="performance">Performance</button>
-        <button class="pb-4 text-sm font-medium transition-colors tab-inactive" data-tab="risk">Risk</button>
-      </div>
-
-      <div class="grid grid-cols-12 gap-12 fade-up delay-3">
-
-        <!-- ══ LEFT COLUMN ══ -->
-        <div class="col-span-8 space-y-16">
-
-          <!-- Key metrics -->
-          <div class="grid grid-cols-3 gap-8">
-            <div>
-              <p class="text-xs font-medium text-zinc-500 uppercase tracking-widest mb-3 underline decoration-dotted underline-offset-4">Vault APY</p>
-              <p class="text-5xl font-medium text-white tracking-tight">14.0%</p>
-            </div>
-            <div>
-              <p class="text-xs font-medium text-zinc-500 uppercase tracking-widest mb-3 underline decoration-dotted underline-offset-4">TVL</p>
-              <p class="text-5xl font-medium text-white tracking-tight">$2.41M</p>
-            </div>
-            <div>
-              <p class="text-xs font-medium text-zinc-500 uppercase tracking-widest mb-3">Available networks</p>
-              <div class="flex items-center -space-x-2">
-                <div class="w-8 h-8 rounded-full bg-purple-600 border-2 border-[#060606] flex items-center justify-center text-[10px] font-bold">SOL</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- About -->
-          <div>
-            <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-6">About</h3>
-            <div class="space-y-4 text-lg leading-relaxed text-zinc-300">
-              <p>The aCain vault accepts USDC deposits on Solana and allocates 100% of capital into xSTOCK SPY — a tokenized representation of the S&P 500 index traded on-chain via Solana. Swaps are executed automatically through Jupiter aggregator at best available price.</p>
-              <p>Returns are reflected directly in the aCain token price rather than distributed as yield — providing passive, compounding exposure to U.S. large-cap equities entirely on-chain. Upon redemption, USDC is returned net of a 30% performance fee on profits only.</p>
-              <p>The vault is designed for investors who want equity-like returns without brokerage accounts, custody friction, or off-chain settlement. <span class="text-white font-medium cursor-pointer underline underline-offset-2 hover:text-zinc-200">Show less</span></p>
-            </div>
-          </div>
-
-          <!-- Performance chart -->
-          <div>
-            <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-6">YTD Performance</h3>
-            <div class="glass-card rounded-2xl p-6">
-              <canvas id="perf-canvas" height="180"></canvas>
-            </div>
-          </div>
-
-          <!-- Technical specs -->
-          <div class="space-y-8">
-            <div class="grid grid-cols-3 gap-y-12 gap-x-8">
-              <div>
-                <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4 underline decoration-dotted underline-offset-4">Payout schedule</p>
-                <p class="text-base text-white">Continuous (price-based)</p>
-              </div>
-              <div>
-                <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Supported apps</p>
-                <div class="flex gap-2">
-                  <div class="w-6 h-6 rounded-full bg-orange-800 flex items-center justify-center text-[8px]">MM</div>
-                  <div class="w-6 h-6 rounded-full bg-purple-800 flex items-center justify-center text-[8px]">Ph</div>
-                </div>
-              </div>
-              <div></div>
-              <div>
-                <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Yield type</p>
-                <p class="text-base text-white underline decoration-dotted underline-offset-4">Directional equity</p>
-              </div>
-              <div>
-                <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Security reviews</p>
-                <p class="text-base text-white underline decoration-dotted underline-offset-4">Fully audited</p>
-              </div>
-              <div></div>
-              <div>
-                <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Avg. redeem time</p>
-                <p class="text-base text-white font-semibold">~30 sec</p>
-              </div>
-              <div>
-                <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Performance fee</p>
-                <p class="text-base text-white underline decoration-dotted underline-offset-4">30% of profits only</p>
-              </div>
-              <div></div>
-              <div>
-                <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Flat tx fee</p>
-                <p class="text-base text-white font-semibold">$0.20 deposit &amp; withdraw</p>
-              </div>
-              <div>
-                <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">No. of holders</p>
-                <p class="text-base text-white font-semibold">1,284</p>
-              </div>
-              <div></div>
-            </div>
-          </div>
-
-          <!-- FAQ -->
-          <div class="space-y-8 pt-16 border-t border-white/5">
-            <h3 class="text-2xl font-semibold text-white">Risk FAQ</h3>
-            <div class="space-y-4">
-              <details class="group glass-card rounded-xl overflow-hidden" open>
-                <summary class="flex items-center justify-between p-6 cursor-pointer hover:bg-white/5 transition-colors">
-                  <span class="text-lg font-medium text-white">What are the primary risks associated with this vault?</span>
-                  <svg class="w-5 h-5 text-zinc-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
-                </summary>
-                <div class="px-6 pb-6 text-zinc-400 leading-relaxed">The primary risks include equity market risk (the S&P 500 can decline), smart contract risk in the Kamino vault program, xSTOCK SPY liquidity risk during off-market hours, and oracle manipulation risk on the Pyth price feed. The vault does not hedge market downside.</div>
-              </details>
-              <details class="group glass-card rounded-xl overflow-hidden">
-                <summary class="flex items-center justify-between p-6 cursor-pointer hover:bg-white/5 transition-colors">
-                  <span class="text-lg font-medium text-white">How is the performance fee calculated?</span>
-                  <svg class="w-5 h-5 text-zinc-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
-                </summary>
-                <div class="px-6 pb-6 text-zinc-400 leading-relaxed">The 30% fee applies only to realised profit at the time of withdrawal. Your cost basis is recorded at deposit. If your position is flat or in loss, only the $0.20 flat fee is deducted. No management fee is charged on AUM.</div>
-              </details>
-              <details class="group glass-card rounded-xl overflow-hidden">
-                <summary class="flex items-center justify-between p-6 cursor-pointer hover:bg-white/5 transition-colors">
-                  <span class="text-lg font-medium text-white">What happens if xSTOCK SPY has no liquidity?</span>
-                  <svg class="w-5 h-5 text-zinc-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
-                </summary>
-                <div class="px-6 pb-6 text-zinc-400 leading-relaxed">Outside NYSE trading hours, on-chain liquidity for xSTOCK SPY may be thin. Deposits during these windows are queued and executed at market open to protect against bad fills. Withdrawals follow the same slippage-protected routing via Jupiter aggregator.</div>
-              </details>
-            </div>
-          </div>
-
-          <!-- Discord CTA -->
-          <div class="glass-card rounded-2xl p-8 flex items-center justify-between border border-blue-500/20 bg-blue-500/5">
-            <div>
-              <h4 class="text-xl font-bold text-white mb-2">Still have a question?</h4>
-              <p class="text-zinc-400">Join our Discord and chat with the technical team directly.</p>
-            </div>
-            <button class="bg-white text-black px-6 py-3 rounded-xl font-bold hover:bg-zinc-200 transition-colors">Join our Discord</button>
-          </div>
-
-        </div>
-        <!-- ══ END LEFT ══ -->
-
-        <!-- ══ RIGHT: MINT CARD ══ -->
-        <aside class="col-span-4 sticky top-28 h-fit">
-          <div class="glass-card rounded-[32px] p-8 shadow-2xl overflow-hidden relative">
-
-            <!-- Glow -->
-            <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-green-500/10 rounded-full blur-[80px] -z-10 pointer-events-none"></div>
-
-            <!-- Mint/Redeem tabs -->
-            <div class="flex items-center gap-6 mb-8 border-b border-white/5 pb-4 text-sm font-medium">
-              <button class="mtab-active pb-4 -mb-[17px] transition-colors" data-mtab="mint">Mint</button>
-              <button class="mtab-inactive pb-4 -mb-[17px] transition-colors" data-mtab="redeem">Redeem</button>
-            </div>
-
-            <!-- ── LOCKED STATE (no wallet) ── -->
-            <div id="card-locked" class="py-8 text-center space-y-4">
-              <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center mx-auto border border-white/10 text-2xl">🔒</div>
-              <p class="text-base font-semibold text-white">Connect your wallet</p>
-              <p class="text-sm text-zinc-500 leading-relaxed">Connect MetaMask (Solana) to deposit into the aCain pool.</p>
-              <button id="connect-card-btn" class="w-full mt-2 mint-button-gradient py-3.5 rounded-2xl text-white font-bold shadow-lg shadow-black/40">
-                Connect MetaMask
-              </button>
-            </div>
-
-            <!-- ── MINT FORM ── -->
-            <div id="mint-form" class="hidden">
-              <!-- Deposit input -->
-              <div class="space-y-4 mb-6">
-                <div class="flex justify-between items-center">
-                  <label class="text-sm text-zinc-400">Deposit</label>
-                  <div class="flex gap-1">
-                    <button class="quick-pct px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-400 hover:bg-white/10 transition-colors" data-pct="25">25%</button>
-                    <button class="quick-pct px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-400 hover:bg-white/10 transition-colors" data-pct="50">50%</button>
-                    <button class="quick-pct px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-400 hover:bg-white/10 transition-colors" data-pct="75">75%</button>
-                    <button class="quick-pct px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-400 hover:bg-white/10 transition-colors" data-pct="100">Max</button>
-                  </div>
-                </div>
-                <div class="flex items-center justify-between py-2">
-                  <div class="flex flex-col">
-                    <input id="mint-amount" class="bg-transparent border-none p-0 text-3xl font-medium focus:ring-0 placeholder-zinc-700 w-36 text-white outline-none" placeholder="0.00" type="number" min="0" step="0.01">
-                    <span id="mint-usd" class="text-sm text-zinc-500">$0.00</span>
-                  </div>
-                  <div class="bg-white/5 border border-white/10 rounded-full px-3 py-2 flex items-center gap-2">
-                    <div class="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-[10px] font-bold">$</div>
-                    <span class="text-sm font-bold text-white">USDC</span>
-                  </div>
-                </div>
-                <p class="text-xs text-zinc-500 flex items-center gap-1">
-                  <span class="w-2 h-2 rounded-full bg-orange-500 inline-block"></span>
-                  Balance: 0.00 USDC
-                </p>
-              </div>
-
-              <!-- Fee breakdown -->
-              <div class="bg-white/3 border border-white/5 rounded-xl p-4 mb-6 space-y-2">
-                <div class="flex justify-between text-xs text-zinc-500">
-                  <span>Flat fee</span><span>−$0.20</span>
-                </div>
-                <div class="flex justify-between text-xs text-zinc-500">
-                  <span>Invested in pool</span><span id="mint-net" class="text-zinc-300">$0.00</span>
-                </div>
-                <div class="border-t border-white/5 pt-2 flex justify-between text-xs">
-                  <span class="text-zinc-500">aCain minted (est.)</span>
-                  <span id="mint-acain" class="text-white font-medium">0.000 aC</span>
-                </div>
-              </div>
-
-              <!-- Receive row -->
-              <div class="border-t border-white/5 pt-6 mb-8">
-                <label class="text-sm text-zinc-400 mb-4 block">Receive</label>
-                <div class="flex items-center justify-between">
-                  <div>
-                    <p id="receive-acain" class="text-3xl font-medium text-zinc-700">0.000</p>
-                    <span id="receive-usd" class="text-sm text-zinc-500">$0.00</span>
-                  </div>
-                  <div class="bg-white/5 border border-white/10 rounded-full px-3 py-2 flex items-center gap-2">
-                    <div class="w-6 h-6 rounded-full bg-zinc-700 flex items-center justify-center text-[10px] font-bold">aC</div>
-                    <span class="text-sm font-bold text-white">aCain</span>
-                  </div>
-                </div>
-              </div>
-
-              <button id="mint-btn" class="w-full mint-button-gradient py-4 rounded-2xl text-white font-bold shadow-lg shadow-black/40 transition-all">
-                Mint aCain
-              </button>
-            </div>
-
-            <!-- ── REDEEM FORM ── -->
-            <div id="redeem-form" class="hidden">
-              <div class="space-y-4 mb-6">
-                <label class="text-sm text-zinc-400">aCain to redeem</label>
-                <div class="flex items-center justify-between py-2">
-                  <div class="flex flex-col">
-                    <input id="redeem-amount" class="bg-transparent border-none p-0 text-3xl font-medium focus:ring-0 placeholder-zinc-700 w-36 text-white outline-none" placeholder="0.000" type="number" min="0" step="0.001">
-                    <span id="redeem-gross-usd" class="text-sm text-zinc-500">$0.00 gross</span>
-                  </div>
-                  <div class="bg-white/5 border border-white/10 rounded-full px-3 py-2 flex items-center gap-2">
-                    <div class="w-6 h-6 rounded-full bg-zinc-700 flex items-center justify-center text-[10px] font-bold">aC</div>
-                    <span class="text-sm font-bold text-white">aCain</span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="bg-white/3 border border-white/5 rounded-xl p-4 mb-6 space-y-2">
-                <div class="flex justify-between text-xs text-zinc-500">
-                  <span>Gross value</span><span id="rd-gross" class="text-zinc-300">$0.00</span>
-                </div>
-                <div class="flex justify-between text-xs text-zinc-500">
-                  <span>Performance fee (30% of profit)</span><span id="rd-perf" class="text-zinc-500">−$0.00</span>
-                </div>
-                <div class="flex justify-between text-xs text-zinc-500">
-                  <span>Flat fee</span><span>−$0.20</span>
-                </div>
-                <div class="border-t border-white/5 pt-2 flex justify-between text-xs">
-                  <span class="text-zinc-400">You receive</span>
-                  <span id="rd-net" class="text-white font-medium">$0.00 USDC</span>
-                </div>
-              </div>
-
-              <button id="redeem-btn" class="w-full mint-button-gradient py-4 rounded-2xl text-white font-bold shadow-lg shadow-black/40">
-                Redeem aCain
-              </button>
-            </div>
-
-          </div>
-        </aside>
-        <!-- ══ END RIGHT ══ -->
-
+      <div class="flex gap-2">
+        <span class="bg-white/5 border border-white/10 px-3 py-1 rounded-full text-xs font-medium text-zinc-400 uppercase tracking-wider">Managed Vault</span>
+        <span class="bg-white/5 border border-white/10 px-3 py-1 rounded-full text-xs font-medium text-zinc-400 uppercase tracking-wider">xSTOCK SPY · Solana</span>
+        <span class="bg-white/5 border border-white/10 px-3 py-1 rounded-full text-xs font-medium text-zinc-400 uppercase tracking-wider">Audited</span>
       </div>
     </div>
-  </main>
-  <!-- ══ END MAIN ══ -->
 
+    <!-- PAGE TABS -->
+    <div id="ptabs" class="flex gap-8 mb-12 border-b border-white/5">
+      <button class="ptab on pb-4 text-sm font-medium" data-tab="overview">Overview</button>
+      <button class="ptab pb-4 text-sm font-medium" data-tab="transparency">Transparency</button>
+      <button class="ptab pb-4 text-sm font-medium" data-tab="performance">Performance</button>
+      <button class="ptab pb-4 text-sm font-medium" data-tab="risk">Risk</button>
+    </div>
+
+    <div class="grid grid-cols-12 gap-12">
+
+      <!-- LEFT -->
+      <div class="col-span-8 space-y-16">
+
+        <!-- metrics -->
+        <div class="grid grid-cols-3 gap-8">
+          <div>
+            <p class="text-xs font-medium text-zinc-500 uppercase tracking-widest mb-3 underline decoration-dotted underline-offset-4">Vault APY</p>
+            <p class="text-5xl font-medium text-white tracking-tight">14.0%</p>
+          </div>
+          <div>
+            <p class="text-xs font-medium text-zinc-500 uppercase tracking-widest mb-3 underline decoration-dotted underline-offset-4">TVL</p>
+            <p class="text-5xl font-medium text-white tracking-tight">$2.41M</p>
+          </div>
+          <div>
+            <p class="text-xs font-medium text-zinc-500 uppercase tracking-widest mb-3">Network</p>
+            <div class="flex items-center -space-x-2">
+              <div class="w-8 h-8 rounded-full bg-purple-600 border-2 border-[#060606] flex items-center justify-center text-[9px] font-bold">SOL</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- about -->
+        <div>
+          <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-6">About</h3>
+          <div class="space-y-4 text-lg leading-relaxed text-zinc-300">
+            <p>The aCain vault accepts USDC deposits on Solana and allocates capital into xSTOCK SPY — tokenized S&P 500 exposure traded on-chain. Swaps are executed through Jupiter aggregator at best available price.</p>
+            <p>Returns reflect directly in the aCain token price. Share price floats with vault NAV: <strong class="text-white">Share Price = Total Vault Value / Total Cain Supply.</strong> Users redeem USDC equivalent at any time after the 7-day lock period.</p>
+            <p>A 30% performance fee is charged only on profits at withdrawal. No management fee on AUM. <span class="text-white font-medium cursor-pointer underline underline-offset-2">Show less</span></p>
+          </div>
+        </div>
+
+        <!-- chart -->
+        <div>
+          <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-6">YTD Performance</h3>
+          <div class="glass-card rounded-2xl p-6">
+            <canvas id="chart" height="160"></canvas>
+          </div>
+        </div>
+
+        <!-- specs table -->
+        <div class="grid grid-cols-3 gap-y-10 gap-x-8">
+          <div>
+            <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-3 underline decoration-dotted underline-offset-4">Lock period</p>
+            <p class="text-base text-white font-semibold">7 days</p>
+          </div>
+          <div>
+            <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-3">Yield type</p>
+            <p class="text-base text-white underline decoration-dotted underline-offset-4">Directional equity</p>
+          </div>
+          <div></div>
+          <div>
+            <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-3">Performance fee</p>
+            <p class="text-base text-white underline decoration-dotted underline-offset-4">30% of profits only</p>
+          </div>
+          <div>
+            <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-3">Flat tx fee</p>
+            <p class="text-base text-white">$0.20 per tx</p>
+          </div>
+          <div></div>
+          <div>
+            <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-3">Avg. redeem time</p>
+            <p class="text-base text-white font-semibold">~30 sec</p>
+          </div>
+          <div>
+            <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-3">Holders</p>
+            <p class="text-base text-white font-semibold">1,284</p>
+          </div>
+          <div></div>
+        </div>
+
+        <!-- FAQ -->
+        <div class="space-y-4 pt-12 border-t border-white/5">
+          <h3 class="text-2xl font-semibold text-white mb-6">Risk FAQ</h3>
+          <details class="group glass-card rounded-xl overflow-hidden" open>
+            <summary class="flex items-center justify-between p-6 cursor-pointer hover:bg-white/5 transition-colors">
+              <span class="text-base font-medium text-white">What are the primary risks?</span>
+              <svg class="w-5 h-5 text-zinc-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            </summary>
+            <div class="px-6 pb-6 text-zinc-400 leading-relaxed">Equity market risk (S&P 500 can decline), smart contract risk in the Anchor vault program, xSTOCK SPY liquidity risk during off-market hours, and oracle staleness risk. The vault does not hedge downside.</div>
+          </details>
+          <details class="group glass-card rounded-xl overflow-hidden">
+            <summary class="flex items-center justify-between p-6 cursor-pointer hover:bg-white/5 transition-colors">
+              <span class="text-base font-medium text-white">How is the performance fee calculated?</span>
+              <svg class="w-5 h-5 text-zinc-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            </summary>
+            <div class="px-6 pb-6 text-zinc-400 leading-relaxed">30% applies only to realised profit at withdrawal. Your cost basis is recorded at deposit. If your position is flat or in loss, only the $0.20 flat fee is deducted.</div>
+          </details>
+          <details class="group glass-card rounded-xl overflow-hidden">
+            <summary class="flex items-center justify-between p-6 cursor-pointer hover:bg-white/5 transition-colors">
+              <span class="text-base font-medium text-white">What is the 7-day lock period?</span>
+              <svg class="w-5 h-5 text-zinc-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            </summary>
+            <div class="px-6 pb-6 text-zinc-400 leading-relaxed">Withdrawals are locked for 7 days after each deposit, enforced on-chain by the Anchor program. This is not a frontend restriction — it cannot be bypassed. Each deposit slot has its own independent lock timer.</div>
+          </details>
+        </div>
+
+        <!-- discord cta -->
+        <div class="glass-card rounded-2xl p-8 flex items-center justify-between border border-blue-500/20 bg-blue-500/5">
+          <div>
+            <h4 class="text-xl font-bold text-white mb-1">Still have a question?</h4>
+            <p class="text-zinc-400">Chat with the technical team on Discord.</p>
+          </div>
+          <button class="bg-white text-black px-6 py-3 rounded-xl font-bold hover:bg-zinc-200 transition-colors">Join our Discord</button>
+        </div>
+
+      </div>
+      <!-- END LEFT -->
+
+      <!-- RIGHT: MINT CARD -->
+      <aside class="col-span-4 sticky top-28 h-fit">
+        <div class="glass-card rounded-[32px] p-8 shadow-2xl relative overflow-hidden">
+          <div class="absolute -bottom-16 -left-16 w-56 h-56 bg-white/5 rounded-full blur-[60px] pointer-events-none"></div>
+
+          <!-- card tabs -->
+          <div class="flex gap-6 mb-8 border-b border-white/5 pb-0 text-sm font-medium">
+            <button class="mtab on pb-4 -mb-px" data-mtab="mint">Mint</button>
+            <button class="mtab pb-4 -mb-px" data-mtab="redeem">Redeem</button>
+            <button class="mtab pb-4 -mb-px" data-mtab="bridge">Bridge</button>
+          </div>
+
+          <!-- LOCKED (no wallet) -->
+          <div id="card-locked" class="py-6 text-center space-y-4">
+            <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center mx-auto border border-white/10 text-xl">🔒</div>
+            <p class="text-sm font-semibold text-white">Connect your wallet to invest</p>
+            <p class="text-xs text-zinc-500 leading-relaxed">MetaMask (Solana v12.18+) or Phantom supported.</p>
+            <button id="btn-connect-card" class="w-full mint-btn-bg py-4 rounded-2xl text-white font-bold mt-2 transition-all">
+              Connect MetaMask
+            </button>
+          </div>
+
+          <!-- MINT FORM -->
+          <div id="mint-form" class="hidden">
+            <div class="flex justify-between items-center mb-3">
+              <label class="text-sm text-zinc-400">Deposit</label>
+              <div class="flex gap-1">
+                <button class="qpct px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-400 hover:bg-white/10" data-v="125">25%</button>
+                <button class="qpct px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-400 hover:bg-white/10" data-v="250">50%</button>
+                <button class="qpct px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-400 hover:bg-white/10" data-v="375">75%</button>
+                <button class="qpct px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-400 hover:bg-white/10" data-v="500">Max</button>
+              </div>
+            </div>
+            <div class="flex items-center justify-between py-2 mb-1">
+              <div>
+                <input id="mint-in" class="bg-transparent border-none p-0 text-3xl font-medium focus:ring-0 placeholder-zinc-700 w-36 text-white outline-none" placeholder="0.00" type="number" min="0" step="1">
+                <p id="mint-usd" class="text-sm text-zinc-500">$0.00</p>
+              </div>
+              <div class="bg-white/5 border border-white/10 rounded-full px-3 py-2 flex items-center gap-2">
+                <div class="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-[10px] font-bold">$</div>
+                <span class="text-sm font-bold">USDC</span>
+              </div>
+            </div>
+            <p class="text-xs text-zinc-500 mb-5 flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-orange-500 inline-block"></span> Balance: 0.00 USDC
+            </p>
+
+            <!-- fee summary -->
+            <div class="bg-white/3 border border-white/5 rounded-xl p-4 mb-5 space-y-2 text-xs">
+              <div class="flex justify-between text-zinc-500"><span>Flat fee</span><span>−$0.20</span></div>
+              <div class="flex justify-between"><span class="text-zinc-500">Invested</span><span id="mint-net" class="text-zinc-300">$0.00</span></div>
+              <div class="flex justify-between border-t border-white/5 pt-2"><span class="text-zinc-500">$Cain minted</span><span id="mint-cain" class="text-white font-medium">0.000</span></div>
+            </div>
+
+            <div class="border-t border-white/5 pt-5 mb-7">
+              <label class="text-sm text-zinc-400 mb-3 block">Receive</label>
+              <div class="flex items-center justify-between">
+                <div>
+                  <p id="recv-cain" class="text-3xl font-medium text-zinc-700">0.000</p>
+                  <p id="recv-usd" class="text-sm text-zinc-500">$0.00</p>
+                </div>
+                <div class="bg-white/5 border border-white/10 rounded-full px-3 py-2 flex items-center gap-2">
+                  <div class="w-6 h-6 rounded-full bg-zinc-700 flex items-center justify-center text-[10px] font-bold">aC</div>
+                  <span class="text-sm font-bold">$Cain</span>
+                </div>
+              </div>
+            </div>
+
+            <button id="btn-mint" class="w-full mint-btn-bg py-4 rounded-2xl text-white font-bold shadow-lg shadow-black/40 transition-all">
+              Mint $Cain
+            </button>
+          </div>
+
+          <!-- REDEEM FORM -->
+          <div id="redeem-form" class="hidden">
+            <label class="text-sm text-zinc-400 block mb-3">$Cain to redeem</label>
+            <div class="flex items-center justify-between py-2 mb-5">
+              <div>
+                <input id="redeem-in" class="bg-transparent border-none p-0 text-3xl font-medium focus:ring-0 placeholder-zinc-700 w-36 text-white outline-none" placeholder="0.000" type="number" min="0" step="0.001">
+                <p id="redeem-gross" class="text-sm text-zinc-500">$0.00 gross</p>
+              </div>
+              <div class="bg-white/5 border border-white/10 rounded-full px-3 py-2 flex items-center gap-2">
+                <div class="w-6 h-6 rounded-full bg-zinc-700 flex items-center justify-center text-[10px] font-bold">aC</div>
+                <span class="text-sm font-bold">$Cain</span>
+              </div>
+            </div>
+
+            <div class="bg-white/3 border border-white/5 rounded-xl p-4 mb-5 space-y-2 text-xs">
+              <div class="flex justify-between text-zinc-500"><span>Gross value</span><span id="rd-gross">$0.00</span></div>
+              <div class="flex justify-between text-zinc-500"><span>Perf. fee (30% of profit)</span><span id="rd-perf">−$0.00</span></div>
+              <div class="flex justify-between text-zinc-500"><span>Flat fee</span><span>−$0.20</span></div>
+              <div class="flex justify-between border-t border-white/5 pt-2"><span class="text-zinc-400">You receive</span><span id="rd-net" class="text-white font-medium">$0.00 USDC</span></div>
+            </div>
+
+            <!-- lock countdown (shown when within 7-day lock) -->
+            <div id="lock-warning" class="hidden bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-4 mb-5 text-xs text-yellow-400">
+              🔒 Funds locked — <span id="lock-days"></span> days remaining. Lock is enforced on-chain.
+            </div>
+
+            <button id="btn-redeem" class="w-full mint-btn-bg py-4 rounded-2xl text-white font-bold shadow-lg shadow-black/40 transition-all">
+              Redeem $Cain
+            </button>
+          </div>
+
+          <!-- BRIDGE FORM -->
+          <div id="bridge-form" class="hidden">
+            <p class="text-sm text-zinc-500 py-8 text-center">Bridge coming soon.</p>
+          </div>
+
+        </div>
+      </aside>
+
+    </div>
+  </div>
+</main>
 </div>
 
-<!-- TOAST -->
 <div id="toast"></div>
 
-<!-- ════════════════════════════════════════
-     JAVASCRIPT
-════════════════════════════════════════ -->
 <script>
-// ─── CONSTANTS ───────────────────────────
-const ACAIN_PRICE  = 1.140;   // current aCain NAV per token
-const COST_BASIS   = 1.000;   // demo inception price (cost basis per aCain)
+// ── CONSTANTS ──────────────────────────────────────
+const ACAIN_PRICE  = 1.140;   // current NAV per $Cain
+const COST_BASIS   = 1.000;   // demo inception cost basis
 const FLAT_FEE     = 0.20;
 const PERF_FEE_PCT = 0.30;
+const LOCK_DAYS    = 7;
 
-// ─── SIDEBAR ─────────────────────────────
-const sidebar = document.getElementById('sidebar');
-document.getElementById('sidebar-toggle').addEventListener('click', toggle);
-document.getElementById('sidebar-toggle-bottom').addEventListener('click', toggle);
-function toggle() { sidebar.classList.toggle('collapsed'); }
+// ── SIDEBAR ────────────────────────────────────────
+document.getElementById('sb-toggle').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('collapsed');
+});
 
-// ─── PAGE TABS ───────────────────────────
-document.querySelectorAll('#page-tabs button').forEach(btn => {
+// ── PAGE TABS ──────────────────────────────────────
+document.querySelectorAll('#ptabs .ptab').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('#page-tabs button').forEach(b => {
-      b.className = 'pb-4 text-sm font-medium transition-colors tab-inactive';
-    });
-    btn.className = 'pb-4 text-sm font-medium transition-colors tab-active';
+    document.querySelectorAll('#ptabs .ptab').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
   });
 });
 
-// ─── MINT / REDEEM CARD TABS ─────────────
-let activeMTab = 'mint';
+// ── CARD TABS ──────────────────────────────────────
+let activeCardTab = 'mint';
 document.querySelectorAll('[data-mtab]').forEach(btn => {
   btn.addEventListener('click', () => {
-    activeMTab = btn.dataset.mtab;
-    document.querySelectorAll('[data-mtab]').forEach(b => {
-      b.className = b.dataset.mtab === activeMTab ? 'mtab-active pb-4 -mb-[17px] transition-colors' : 'mtab-inactive pb-4 -mb-[17px] transition-colors';
-    });
-    // show correct form if wallet connected
-    if (walletAddress) showWalletForms();
+    activeCardTab = btn.dataset.mtab;
+    document.querySelectorAll('[data-mtab]').forEach(b => b.classList.toggle('on', b.dataset.mtab === activeCardTab));
+    if (walletAddr) showForms();
   });
 });
 
-// ─── WALLET STATE ─────────────────────────
-let walletAddress = null;
+// ── WALLET ─────────────────────────────────────────
+let walletAddr = null;
 
-function onConnect(address) {
-  walletAddress = address;
-  const short = address.slice(0,4) + '…' + address.slice(-4);
-
-  // Pill
-  document.getElementById('wallet-connected-pill').classList.add('visible');
-  document.getElementById('wallet-address-short').textContent = short;
-
-  // Chip
-  document.getElementById('wallet-chip').classList.remove('hidden');
-  document.getElementById('wallet-chip').classList.add('flex');
-  document.getElementById('wallet-chip-address').textContent = short;
-
-  // Buttons
-  document.getElementById('connect-btn').classList.add('hidden');
-  document.getElementById('disconnect-btn').classList.remove('hidden');
-  document.getElementById('disconnect-btn').classList.add('flex');
-
-  showWalletForms();
-  showToast('Wallet connected · ' + short, 'green');
+function onConnect(addr) {
+  walletAddr = addr;
+  const short = addr.slice(0,4) + '…' + addr.slice(-4);
+  // pill
+  document.getElementById('pill-addr').textContent = short;
+  document.getElementById('wallet-pill').classList.add('show');
+  // swap buttons
+  document.getElementById('btn-connect').classList.add('hidden');
+  document.getElementById('btn-disconnect').classList.remove('hidden');
+  showForms();
+  toast('Wallet connected · ' + short, 'ok');
 }
 
 function onDisconnect() {
-  walletAddress = null;
-  document.getElementById('wallet-connected-pill').classList.remove('visible');
-  document.getElementById('wallet-chip').classList.add('hidden');
-  document.getElementById('wallet-chip').classList.remove('flex');
-  document.getElementById('wallet-address-short').textContent = '';
-  document.getElementById('wallet-chip-address').textContent = '';
-  document.getElementById('connect-btn').classList.remove('hidden');
-  document.getElementById('disconnect-btn').classList.add('hidden');
-  document.getElementById('disconnect-btn').classList.remove('flex');
-
+  walletAddr = null;
+  document.getElementById('wallet-pill').classList.remove('show');
+  document.getElementById('btn-connect').classList.remove('hidden');
+  document.getElementById('btn-disconnect').classList.add('hidden');
   document.getElementById('card-locked').classList.remove('hidden');
-  document.getElementById('mint-form').classList.add('hidden');
-  document.getElementById('redeem-form').classList.add('hidden');
-  showToast('Wallet disconnected');
+  ['mint-form','redeem-form','bridge-form'].forEach(id => document.getElementById(id).classList.add('hidden'));
+  toast('Wallet disconnected');
 }
 
-function showWalletForms() {
+function showForms() {
   document.getElementById('card-locked').classList.add('hidden');
-  document.getElementById('mint-form').classList.toggle('hidden', activeMTab !== 'mint');
-  document.getElementById('redeem-form').classList.toggle('hidden', activeMTab !== 'redeem');
+  document.getElementById('mint-form').classList.toggle('hidden', activeCardTab !== 'mint');
+  document.getElementById('redeem-form').classList.toggle('hidden', activeCardTab !== 'redeem');
+  document.getElementById('bridge-form').classList.toggle('hidden', activeCardTab !== 'bridge');
 }
 
-// ─── METAMASK / SOLANA CONNECTION ────────
-// MetaMask v12.18+ injects window.solana with isMetaMask=true for Solana.
-// Falls back to window.ethereum (EVM) for older versions.
-function getSolanaProvider() {
-  if (window.solana?.isMetaMask)    return window.solana;   // MM Solana native
-  if (window.solana?.isPhantom)     return window.solana;   // Phantom fallback
-  if (window.solana)                return window.solana;   // Generic Solana
+// MetaMask Solana connection
+function getProvider() {
+  if (window.solana?.isMetaMask) return window.solana;
+  if (window.solana)             return window.solana;
   return null;
 }
 
 async function connectWallet() {
-  // 1. MetaMask Solana (Extension v12.18+, window.solana injected)
-  const sol = getSolanaProvider();
+  const sol = getProvider();
   if (sol) {
     try {
-      const resp = await sol.connect();
-      const pk = resp?.publicKey?.toString() || sol.publicKey?.toString();
+      const r = await sol.connect();
+      const pk = r?.publicKey?.toString() || sol.publicKey?.toString();
       if (pk) { onConnect(pk); return; }
-    } catch (e) {
-      if (e.code === 4001) { showToast('Connection rejected', 'red'); return; }
+    } catch(e) {
+      if (e.code === 4001) { toast('Rejected by user', 'err'); return; }
     }
   }
-
-  // 2. MetaMask EVM fallback (shows EVM address, warns to switch)
   if (window.ethereum) {
     try {
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      if (accounts.length) {
-        showToast('MetaMask EVM detected — switch to Solana in MetaMask settings');
-        onConnect(accounts[0]);
-        return;
-      }
-    } catch (e) {
-      if (e.code === 4001) { showToast('Connection rejected', 'red'); return; }
-    }
+      const acc = await window.ethereum.request({ method:'eth_requestAccounts' });
+      if (acc.length) { toast('EVM MetaMask — switch to Solana network'); onConnect(acc[0]); return; }
+    } catch(e) { if (e.code === 4001) { toast('Rejected', 'err'); return; } }
   }
-
-  // 3. Not installed
-  showToast('MetaMask not found — install or update to v12.18+', 'red');
-  setTimeout(() => window.open('https://metamask.io/download/', '_blank'), 800);
+  toast('MetaMask not found — install v12.18+', 'err');
 }
 
-async function disconnectWallet() {
-  try { await getSolanaProvider()?.disconnect?.(); } catch (_) {}
+window.solana?.on?.('accountChanged', pk => pk ? onConnect(pk.toString()) : onDisconnect());
+window.ethereum?.on?.('accountsChanged', a => { if (!a.length) onDisconnect(); });
+
+document.getElementById('btn-connect').addEventListener('click', connectWallet);
+document.getElementById('btn-connect-card').addEventListener('click', connectWallet);
+document.getElementById('btn-disconnect').addEventListener('click', () => {
+  getProvider()?.disconnect?.().catch(()=>{});
   onDisconnect();
-}
+});
 
-// Account change listeners
-if (window.solana) {
-  window.solana.on?.('accountChanged', pk => pk ? onConnect(pk.toString()) : onDisconnect());
-}
-if (window.ethereum) {
-  window.ethereum.on?.('accountsChanged', a => { if (!a.length) onDisconnect(); });
-}
+// ── FEE CALCULATOR ─────────────────────────────────
+document.getElementById('mint-in').addEventListener('input', calcMint);
+document.getElementById('redeem-in').addEventListener('input', calcRedeem);
 
-document.getElementById('connect-btn').addEventListener('click', connectWallet);
-document.getElementById('connect-card-btn').addEventListener('click', connectWallet);
-document.getElementById('disconnect-btn').addEventListener('click', disconnectWallet);
-
-// ─── FEE CALCULATOR ──────────────────────
-document.getElementById('mint-amount').addEventListener('input', updateMint);
-document.getElementById('redeem-amount').addEventListener('input', updateRedeem);
-
-function updateMint() {
-  const gross = parseFloat(document.getElementById('mint-amount').value) || 0;
+function calcMint() {
+  const gross = parseFloat(document.getElementById('mint-in').value) || 0;
   const net   = Math.max(0, gross - FLAT_FEE);
-  const acain = net / ACAIN_PRICE;
-  document.getElementById('mint-usd').textContent      = '$' + gross.toFixed(2);
-  document.getElementById('mint-net').textContent      = '$' + net.toFixed(2);
-  document.getElementById('mint-acain').textContent    = acain.toFixed(3) + ' aC';
-  document.getElementById('receive-acain').textContent = acain.toFixed(3);
-  document.getElementById('receive-usd').textContent   = '$' + (acain * ACAIN_PRICE).toFixed(2);
-  document.getElementById('receive-acain').className   = acain > 0
-    ? 'text-3xl font-medium text-white' : 'text-3xl font-medium text-zinc-700';
+  const cain  = net / ACAIN_PRICE;
+  document.getElementById('mint-usd').textContent  = '$' + gross.toFixed(2);
+  document.getElementById('mint-net').textContent  = '$' + net.toFixed(2);
+  document.getElementById('mint-cain').textContent = cain.toFixed(3);
+  document.getElementById('recv-cain').textContent = cain.toFixed(3);
+  document.getElementById('recv-usd').textContent  = '$' + (cain * ACAIN_PRICE).toFixed(2);
+  document.getElementById('recv-cain').className   = cain > 0 ? 'text-3xl font-medium text-white' : 'text-3xl font-medium text-zinc-700';
 }
 
-function updateRedeem() {
-  const acain   = parseFloat(document.getElementById('redeem-amount').value) || 0;
-  const gross   = acain * ACAIN_PRICE;
-  const profit  = Math.max(0, acain * ACAIN_PRICE - acain * COST_BASIS);
-  const perfFee = profit * PERF_FEE_PCT;
-  const net     = Math.max(0, gross - perfFee - FLAT_FEE);
-  document.getElementById('redeem-gross-usd').textContent = '$' + gross.toFixed(2) + ' gross';
-  document.getElementById('rd-gross').textContent         = '$' + gross.toFixed(2);
-  document.getElementById('rd-perf').textContent          = '−$' + perfFee.toFixed(2);
-  document.getElementById('rd-net').textContent           = '$' + net.toFixed(2) + ' USDC';
+function calcRedeem() {
+  const cain   = parseFloat(document.getElementById('redeem-in').value) || 0;
+  const gross  = cain * ACAIN_PRICE;
+  const profit = Math.max(0, cain * (ACAIN_PRICE - COST_BASIS));
+  const perf   = profit * PERF_FEE_PCT;
+  const net    = Math.max(0, gross - perf - FLAT_FEE);
+  document.getElementById('redeem-gross').textContent = '$' + gross.toFixed(2) + ' gross';
+  document.getElementById('rd-gross').textContent     = '$' + gross.toFixed(2);
+  document.getElementById('rd-perf').textContent      = '−$' + perf.toFixed(2);
+  document.getElementById('rd-net').textContent       = '$' + net.toFixed(2) + ' USDC';
 }
 
-// Quick % buttons (demo — no real balance)
-document.querySelectorAll('.quick-pct').forEach(btn => {
+// Quick % presets (demo balance $500)
+document.querySelectorAll('.qpct').forEach(btn => {
   btn.addEventListener('click', () => {
-    const demo = 500; // demo balance
-    document.getElementById('mint-amount').value = ((demo * parseInt(btn.dataset.pct)) / 100).toFixed(2);
-    updateMint();
+    document.getElementById('mint-in').value = btn.dataset.v;
+    calcMint();
   });
 });
 
-// ─── MINT / REDEEM ACTIONS ───────────────
-document.getElementById('mint-btn').addEventListener('click', async () => {
-  const amt = parseFloat(document.getElementById('mint-amount').value);
-  if (!amt || amt < 0.21) { showToast('Minimum deposit is $0.21', 'red'); return; }
-  const btn = document.getElementById('mint-btn');
+// ── MINT / REDEEM ACTIONS ──────────────────────────
+document.getElementById('btn-mint').addEventListener('click', async () => {
+  const amt = parseFloat(document.getElementById('mint-in').value);
+  if (!amt || amt <= FLAT_FEE) { toast('Minimum deposit $0.21', 'err'); return; }
+  const btn = document.getElementById('btn-mint');
   btn.disabled = true; btn.textContent = 'Building transaction…';
-  // ── Cloudflare Worker call goes here ──
-  // const res = await fetch('/api/build-deposit-tx', { method:'POST', body: JSON.stringify({ userWallet: walletAddress, amountUSDC: amt }) });
-  // const { tx } = await res.json();
+  // ── swap comment below for real Worker call ──
+  // const {tx} = await fetch('/api/build-deposit-tx',{method:'POST',body:JSON.stringify({userWallet:walletAddr,amountUSDC:amt})}).then(r=>r.json());
   // const sig = await window.solana.signAndSendTransaction(tx);
   await new Promise(r => setTimeout(r, 1400));
-  showToast('Deposit submitted · tx: demo1234…', 'green');
-  document.getElementById('mint-amount').value = '';
-  updateMint();
-  btn.disabled = false; btn.textContent = 'Mint aCain';
+  toast('Deposit submitted · tx: abc123…', 'ok');
+  document.getElementById('mint-in').value = ''; calcMint();
+  btn.disabled = false; btn.textContent = 'Mint $Cain';
 });
 
-document.getElementById('redeem-btn').addEventListener('click', async () => {
-  const amt = parseFloat(document.getElementById('redeem-amount').value);
-  if (!amt || amt <= 0) { showToast('Enter aCain amount to redeem', 'red'); return; }
-  const btn = document.getElementById('redeem-btn');
+document.getElementById('btn-redeem').addEventListener('click', async () => {
+  const amt = parseFloat(document.getElementById('redeem-in').value);
+  if (!amt || amt <= 0) { toast('Enter $Cain amount', 'err'); return; }
+  const btn = document.getElementById('btn-redeem');
   btn.disabled = true; btn.textContent = 'Building transaction…';
   await new Promise(r => setTimeout(r, 1400));
-  showToast('Redemption submitted · tx: demo5678…', 'green');
-  document.getElementById('redeem-amount').value = '';
-  updateRedeem();
-  btn.disabled = false; btn.textContent = 'Redeem aCain';
+  toast('Redemption submitted · tx: def456…', 'ok');
+  document.getElementById('redeem-in').value = ''; calcRedeem();
+  btn.disabled = false; btn.textContent = 'Redeem $Cain';
 });
 
-// ─── TOAST ───────────────────────────────
-function showToast(msg, type = '') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'show' + (type ? ' ' + type : '');
-  clearTimeout(t._t);
-  t._t = setTimeout(() => { t.className = ''; }, 3500);
-}
-
-// ─── PERFORMANCE CHART (pure canvas) ─────
+// ── CHART ──────────────────────────────────────────
 (function() {
-  const canvas = document.getElementById('perf-canvas');
+  const canvas = document.getElementById('chart');
   const ctx    = canvas.getContext('2d');
-  const labels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const data   = [1.000,1.009,1.022,1.018,1.035,1.049,1.063,1.072,1.090,1.106,1.122,1.140];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const vals   = [1.000,1.009,1.022,1.018,1.035,1.049,1.063,1.072,1.090,1.106,1.122,1.140];
 
   function draw() {
-    const W = canvas.parentElement.clientWidth - 48; // account for padding
-    const H = 180;
+    const W = canvas.parentElement.clientWidth - 48;
+    const H = 160;
     canvas.width  = W * devicePixelRatio;
     canvas.height = H * devicePixelRatio;
     canvas.style.width  = W + 'px';
     canvas.style.height = H + 'px';
     ctx.scale(devicePixelRatio, devicePixelRatio);
 
-    const pad = { top:10, right:12, bottom:28, left:44 };
-    const cW  = W - pad.left - pad.right;
-    const cH  = H - pad.top  - pad.bottom;
-    const min = 0.98, max = 1.16;
-
-    const xOf = i => pad.left + (i / (data.length-1)) * cW;
-    const yOf = v => pad.top  + cH - ((v-min)/(max-min)) * cH;
+    const p  = {t:10,r:12,b:28,l:42};
+    const cW = W-p.l-p.r, cH = H-p.t-p.b;
+    const mn = 0.98, mx = 1.16;
+    const xf = i => p.l + (i/(vals.length-1))*cW;
+    const yf = v => p.t + cH - ((v-mn)/(mx-mn))*cH;
 
     ctx.clearRect(0,0,W,H);
 
-    // Grid
+    // gridlines + y labels
     for (let i=0;i<=4;i++) {
-      const y = pad.top + (cH/4)*i;
-      ctx.beginPath();
-      ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-      ctx.lineWidth = 1;
-      ctx.moveTo(pad.left,y); ctx.lineTo(W-pad.right,y); ctx.stroke();
-      const v = max - ((max-min)/4)*i;
-      ctx.fillStyle = '#52525b';
-      ctx.font = '10px Inter, sans-serif';
-      ctx.textAlign = 'right';
-      ctx.fillText(((v-1)*100).toFixed(1)+'%', pad.left-6, y+4);
+      const y = p.t+(cH/4)*i;
+      ctx.strokeStyle='rgba(255,255,255,0.05)'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(p.l,y); ctx.lineTo(W-p.r,y); ctx.stroke();
+      const v = mx-((mx-mn)/4)*i;
+      ctx.fillStyle='#52525b'; ctx.font='10px Inter,sans-serif'; ctx.textAlign='right';
+      ctx.fillText(((v-1)*100).toFixed(1)+'%', p.l-6, y+4);
     }
 
-    // X labels
-    ctx.fillStyle = '#52525b';
-    ctx.textAlign = 'center';
-    labels.forEach((l,i) => {
-      if (i%2===0) ctx.fillText(l, xOf(i), H-pad.bottom+14);
-    });
+    // x labels
+    ctx.fillStyle='#52525b'; ctx.textAlign='center';
+    months.forEach((m,i) => { if(i%2===0) ctx.fillText(m, xf(i), H-p.b+14); });
 
-    // Gradient fill
-    const grad = ctx.createLinearGradient(0,pad.top,0,pad.top+cH);
-    grad.addColorStop(0,'rgba(255,255,255,0.07)');
-    grad.addColorStop(1,'rgba(255,255,255,0)');
+    // fill
+    const g = ctx.createLinearGradient(0,p.t,0,p.t+cH);
+    g.addColorStop(0,'rgba(255,255,255,0.06)'); g.addColorStop(1,'rgba(255,255,255,0)');
     ctx.beginPath();
-    data.forEach((v,i) => i===0 ? ctx.moveTo(xOf(i),yOf(v)) : ctx.lineTo(xOf(i),yOf(v)));
-    ctx.lineTo(xOf(data.length-1),pad.top+cH);
-    ctx.lineTo(xOf(0),pad.top+cH);
-    ctx.closePath();
-    ctx.fillStyle = grad;
-    ctx.fill();
+    vals.forEach((v,i) => i===0 ? ctx.moveTo(xf(i),yf(v)) : ctx.lineTo(xf(i),yf(v)));
+    ctx.lineTo(xf(vals.length-1),p.t+cH); ctx.lineTo(xf(0),p.t+cH); ctx.closePath();
+    ctx.fillStyle=g; ctx.fill();
 
-    // Line
+    // line
     ctx.beginPath();
-    data.forEach((v,i) => i===0 ? ctx.moveTo(xOf(i),yOf(v)) : ctx.lineTo(xOf(i),yOf(v)));
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth   = 1.5;
-    ctx.lineJoin    = 'round';
-    ctx.stroke();
+    vals.forEach((v,i) => i===0 ? ctx.moveTo(xf(i),yf(v)) : ctx.lineTo(xf(i),yf(v)));
+    ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.lineJoin='round'; ctx.stroke();
 
-    // End dot
-    ctx.beginPath();
-    ctx.arc(xOf(data.length-1), yOf(data[data.length-1]), 4, 0, Math.PI*2);
-    ctx.fillStyle   = '#ffffff';
-    ctx.fill();
-    ctx.strokeStyle = '#060606';
-    ctx.lineWidth   = 2;
-    ctx.stroke();
+    // end dot
+    const lv = vals[vals.length-1];
+    ctx.beginPath(); ctx.arc(xf(vals.length-1),yf(lv),4,0,Math.PI*2);
+    ctx.fillStyle='#fff'; ctx.fill();
+    ctx.strokeStyle='#060606'; ctx.lineWidth=2; ctx.stroke();
   }
 
   draw();
   window.addEventListener('resize', draw);
 })();
+
+// ── TOAST ──────────────────────────────────────────
+function toast(msg, type='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show' + (type ? ' '+type : '');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.className=''; }, 3500);
+}
 </script>
 </body>
 </html>
